@@ -1,35 +1,47 @@
 import telebot
-import time
-import threading
 
-# -------------------------
-# SETUP — Replace with your own
-TOKEN = 8381181264:AAE95B3hJENM0mkSHJupQq-VY6hkEtaTdaM
-CHANNEL_ID = -1003789323635
-# -------------------------
+TOKEN = "8798615501:AAEMrTHWsHpDggiYsqjeIFNAzJWSltFrI0g"
+CHANNEL_ID = -1003843176537
+BOT_USERNAME = "Ghopghop842_bot"
 
 bot = telebot.TeleBot(TOKEN)
 
-# Function to send posts from Telegram channel links
+@bot.message_handler(commands=['start'])
+def start(message):
+    args = message.text.split()
+
+    if len(args) > 1:
+        try:
+            post_id = int(args[1])
+
+            bot.copy_message(
+                chat_id=message.chat.id,
+                from_chat_id=CHANNEL_ID,
+                message_id=post_id
+            )
+        except:
+            bot.reply_to(message, "⚠️ Post nahi mila.")
+    else:
+        bot.reply_to(message, "Channel post link bhejo, main bot link bana dunga.")
+
 @bot.message_handler(func=lambda message: True)
-def send_post(message):
+def generate_link(message):
     text = message.text
 
-    if "t.me/c/" in text:  # Agar message me Telegram channel link hai
+    if "t.me/c/" in text:
         try:
-            post_id = int(text.split("/")[-1])
-            msg = bot.copy_message(message.chat.id, CHANNEL_ID, post_id)
+            post_id = text.split("/")[-1]
 
-            # Delete after 20 minutes (1200 seconds)
-            def delete_msg():
-                time.sleep(1200)
-                bot.delete_message(message.chat.id, msg.message_id)
+            bot_link = f"https://t.me/{BOT_USERNAME}?start={post_id}"
 
-            threading.Thread(target=delete_msg).start()
-
+            bot.reply_to(
+                message,
+                f"✅ Bot Link Ready:\n\n{bot_link}"
+            )
         except:
-            bot.reply_to(message, "Post nahi mila ❌")
+            bot.reply_to(message, "⚠️ Link galat hai.")
+    else:
+        bot.reply_to(message, "❌ Channel post link bhejo.")
 
-# Start the bot
-print("Bot started… ✅")
+print("Bot started...")
 bot.infinity_polling()
